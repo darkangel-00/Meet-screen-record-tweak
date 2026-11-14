@@ -274,10 +274,10 @@ static UIWindow *MLRKeyWindow(void) {
     recorder.delegate = self;
     recorder.microphoneEnabled = YES;
     [self setRecorderState:MLRRecordingStateStarting];
-    __weak typeof(self) weakSelf = self;
+    __weak id weakSelf = self;
     [recorder startRecordingWithHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(weakSelf) self = weakSelf;
+            __strong typeof(self) self = weakSelf;
             if (!self) return;
             if (error) {
                 [self setRecorderState:MLRRecordingStateIdle];
@@ -298,11 +298,11 @@ static UIWindow *MLRKeyWindow(void) {
     NSURL *url = [NSURL fileURLWithPath:[NSTemporaryDirectory()
                        stringByAppendingPathComponent:fileName]];
     self.pendingURL = url;
-    __weak typeof(self) weakSelf = self;
+    __weak id weakSelf = self;
     [RPScreenRecorder.sharedRecorder stopRecordingWithOutputURL:url
         completionHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(weakSelf) self = weakSelf;
+            __strong typeof(self) self = weakSelf;
             if (!self) return;
             if (error) {
                 [self setRecorderState:MLRRecordingStateIdle];
@@ -327,11 +327,11 @@ static UIWindow *MLRKeyWindow(void) {
 - (void)saveToPhotos:(NSURL *)url {
     PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatusForAccessLevel:PHAccessLevelAddOnly];
     if (status == PHAuthorizationStatusNotDetermined) {
-        __weak typeof(self) weakSelf = self;
+        __weak id weakSelf = self;
         [PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelAddOnly
             handler:^(PHAuthorizationStatus result) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                __strong typeof(weakSelf) self = weakSelf;
+                __strong typeof(self) self = weakSelf;
                 if (self) [self finishPhotoAuthorization:result fileURL:url];
             });
         }];
@@ -348,12 +348,12 @@ static UIWindow *MLRKeyWindow(void) {
                   @"Allow Add Photos permission in Settings. Recording retained temporarily at %@", url.path]];
         return;
     }
-    __weak typeof(self) weakSelf = self;
+    __weak id weakSelf = self;
     [PHPhotoLibrary.sharedPhotoLibrary performChanges:^{
         [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:url];
     } completionHandler:^(BOOL success, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(weakSelf) self = weakSelf;
+            __strong typeof(self) self = weakSelf;
             if (!self) return;
             if (success) {
                 NSError *cleanupError = nil;

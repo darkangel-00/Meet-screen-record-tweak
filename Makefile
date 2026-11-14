@@ -15,3 +15,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Trigger macos-latest
 # Trigger dpkg build
 # Trigger update-theos
+# Fix weak self pattern
