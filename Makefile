@@ -16,3 +16,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Trigger dpkg build
 # Trigger update-theos
 # Fix weak self pattern
+# Fix all weak self patterns
