@@ -12,3 +12,4 @@ MeetLocalRecorder_CFLAGS = -fobjc-arc -std=c++17 -Wno-deprecated-declarations \
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/tweak.mk
 # Trigger
+# Trigger macos-latest
