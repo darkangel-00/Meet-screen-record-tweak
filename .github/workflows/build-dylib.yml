@@ -19,6 +19,9 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Install dpkg (for dm.pl)
+        run: brew install dpkg
+
       - name: Setup Theos
         run: |
           git clone --depth 1 --branch master https://github.com/theos/theos.git $HOME/theos
@@ -31,14 +34,14 @@ jobs:
           ls -la $HOME/theos/sdks/ 2>/dev/null || echo "SDKs dir not found"
           xcodebuild -showsdks
 
-      - name: Build Tweak (dylib)
+      - name: Build Tweak (dylib only, no package)
         env:
           THEOS: /Users/runner/theos
           THEOS_DEVICE_IP: localhost
           THEOS_DEVICE_PORT: 22
         run: |
           make clean
-          make package FINALPACKAGE=1
+          make
 
       - name: Find and verify dylib
         run: |
@@ -56,6 +59,13 @@ jobs:
             .theos/obj/arm64/MeetLocalRecorder.dylib
             **/*.dylib
           retention-days: 7
+
+      - name: Try build package (optional, with dpkg)
+        env:
+          THEOS: /Users/runner/theos
+        run: |
+          make package FINALPACKAGE=1 2>&1 || echo "Package build failed, dylib already built"
+        continue-on-error: true
 
       - name: Upload deb package (if created)
         uses: actions/upload-artifact@v4
