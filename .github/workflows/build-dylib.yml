@@ -19,8 +19,9 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install dpkg (for dm.pl)
-        run: brew install dpkg
+      - name: Install dpkg and ldid
+        run: |
+          brew install dpkg ldid
 
       - name: Setup Theos
         run: |
