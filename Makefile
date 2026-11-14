@@ -14,3 +14,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Trigger
 # Trigger macos-latest
 # Trigger dpkg build
+# Trigger update-theos
