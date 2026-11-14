@@ -18,3 +18,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Fix weak self pattern
 # Fix all weak self patterns
 # Fix strongSelf scope
+# Fix typeof(weakSelf)

@@ -277,7 +277,7 @@ static UIWindow *MLRKeyWindow(void) {
     __weak id weakSelf = self;
     [recorder startRecordingWithHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (error) {
                 [self setRecorderState:MLRRecordingStateIdle];
@@ -302,7 +302,7 @@ static UIWindow *MLRKeyWindow(void) {
     [RPScreenRecorder.sharedRecorder stopRecordingWithOutputURL:url
         completionHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (error) {
                 [self setRecorderState:MLRRecordingStateIdle];
@@ -331,7 +331,7 @@ static UIWindow *MLRKeyWindow(void) {
         [PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelAddOnly
             handler:^(PHAuthorizationStatus result) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                __strong typeof(self) strongSelf = weakSelf;
+                __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (strongSelf) [strongSelf finishPhotoAuthorization:result fileURL:url];
             });
         }];
@@ -353,7 +353,7 @@ static UIWindow *MLRKeyWindow(void) {
         [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:url];
     } completionHandler:^(BOOL success, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (success) {
                 NSError *cleanupError = nil;
@@ -378,7 +378,7 @@ static UIWindow *MLRKeyWindow(void) {
        previewViewController:(RPPreviewViewController *)previewViewController {
     __weak id weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        __strong typeof(self) strongSelf = weakSelf;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
         if (strongSelf.state == MLRRecordingStateSaving) return;
         [self setRecorderState:MLRRecordingStateIdle];
