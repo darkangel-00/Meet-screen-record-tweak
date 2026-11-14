@@ -267,20 +267,20 @@ static UIWindow *MLRKeyWindow(void) {
 - (void)startRecording {
     RPScreenRecorder *recorder = RPScreenRecorder.sharedRecorder;
     if (!recorder.isAvailable || recorder.isRecording) {
-        [strongSelf showMessage:@"Recording unavailable"
+        [self showMessage:@"Recording unavailable"
             message:@"ReplayKit is busy or unavailable for this app/session."];
         return;
     }
     recorder.delegate = self;
     recorder.microphoneEnabled = YES;
-    [strongSelf setRecorderState:MLRRecordingStateStarting];
+    [self setRecorderState:MLRRecordingStateStarting];
     __weak id weakSelf = self;
     [recorder startRecordingWithHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             __strong typeof(self) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (error) {
-                [strongSelf setRecorderState:MLRRecordingStateIdle];
+                [self setRecorderState:MLRRecordingStateIdle];
                 [strongSelf showMessage:@"Cannot start recording"
                               message:error.localizedDescription ?: @"Unknown ReplayKit error"];
             } else {
@@ -292,7 +292,7 @@ static UIWindow *MLRKeyWindow(void) {
 
 - (void)stopRecording {
     if (self.state != MLRRecordingStateRecording) return;
-    [strongSelf setRecorderState:MLRRecordingStateStopping];
+    [self setRecorderState:MLRRecordingStateStopping];
     NSString *fileName = [NSString stringWithFormat:@"Meet-%@.mp4",
                           NSUUID.UUID.UUIDString];
     NSURL *url = [NSURL fileURLWithPath:[NSTemporaryDirectory()
@@ -305,7 +305,7 @@ static UIWindow *MLRKeyWindow(void) {
             __strong typeof(self) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (error) {
-                [strongSelf setRecorderState:MLRRecordingStateIdle];
+                [self setRecorderState:MLRRecordingStateIdle];
                 [strongSelf showMessage:@"Cannot finish recording"
                           message:error.localizedDescription ?: @"Unknown ReplayKit error"];
                 return;
@@ -313,7 +313,7 @@ static UIWindow *MLRKeyWindow(void) {
             NSDictionary *attrs = [NSFileManager.defaultManager attributesOfItemAtPath:url.path error:NULL];
             NSNumber *fileSize = attrs[NSFileSize];
             if (fileSize == nil || fileSize.unsignedLongLongValue == 0) {
-                [strongSelf setRecorderState:MLRRecordingStateIdle];
+                [self setRecorderState:MLRRecordingStateIdle];
                 [strongSelf showMessage:@"Empty recording"
                           message:@"ReplayKit did not produce a playable file."];
                 return;
@@ -342,8 +342,8 @@ static UIWindow *MLRKeyWindow(void) {
 
 - (void)finishPhotoAuthorization:(PHAuthorizationStatus)status fileURL:(NSURL *)url {
     if (status != PHAuthorizationStatusAuthorized && status != PHAuthorizationStatusLimited) {
-        [strongSelf setRecorderState:MLRRecordingStateIdle];
-        [strongSelf showMessage:@"Photos permission required"
+        [self setRecorderState:MLRRecordingStateIdle];
+        [self showMessage:@"Photos permission required"
                   message:[NSString stringWithFormat:
                   @"Allow Add Photos permission in Settings. Recording retained temporarily at %@", url.path]];
         return;
@@ -367,7 +367,7 @@ static UIWindow *MLRKeyWindow(void) {
                     message:[NSString stringWithFormat:@"%@\nThe temporary recording remains at %@",
                         error.localizedDescription ?: @"Unknown Photos error", url.path]];
             }
-            [strongSelf setRecorderState:MLRRecordingStateIdle];
+            [self setRecorderState:MLRRecordingStateIdle];
         });
     }];
 }
@@ -381,7 +381,7 @@ static UIWindow *MLRKeyWindow(void) {
         __strong typeof(self) strongSelf = weakSelf;
         if (!strongSelf) return;
         if (strongSelf.state == MLRRecordingStateSaving) return;
-        [strongSelf setRecorderState:MLRRecordingStateIdle];
+        [self setRecorderState:MLRRecordingStateIdle];
         [strongSelf showMessage:@"Recording interrupted"
                   message:error.localizedDescription ?: @"ReplayKit stopped unexpectedly."];
     });

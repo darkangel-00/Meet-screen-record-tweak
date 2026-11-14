@@ -17,3 +17,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Trigger update-theos
 # Fix weak self pattern
 # Fix all weak self patterns
+# Fix strongSelf scope
