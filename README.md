@@ -83,3 +83,4 @@ is not sufficient. The `.deb` is optional; the `.dylib` is the main artifact.
 No CI build/test is provided; validation requires a real iOS SDK, Theos,
 a matching injector, and a physical iOS 26.6.1 device.
 # Trigger
+# Trigger 2
