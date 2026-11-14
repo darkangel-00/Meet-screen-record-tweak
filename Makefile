@@ -21,3 +21,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Fix typeof(weakSelf)
 # Fix __strong id
 # Fix MLRController* cast
+# Install ldid
