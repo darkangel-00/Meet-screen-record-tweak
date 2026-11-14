@@ -1,0 +1,68 @@
+name: Build MeetLocalRecorder dylib
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**.xm'
+      - '**.py'
+      - 'Makefile'
+      - 'control'
+      - '*.plist'
+
+jobs:
+  build:
+    runs-on: macos-13
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      
+      - name: Setup Theos
+        run: |
+        git clone --depth 1 --branch master https://github.com/theos/theos.git $HOME/theos
+        echo "$HOME/theos/bin" >> $GITHUB_PATH
+        export THEOS="$HOME/theos"
+        $THEOS/bin/theos_install_toolchains 2>&1 | tail -5
+      
+      - name: Verify iOS SDK
+        run: |
+        ls -la $HOME/theos/sdks/ 2>/dev/null || echo "SDKs dir not found"
+        xcodebuild -showsdks
+      
+      - name: Build Tweak (dylib)
+        env:
+          THEOS: /Users/runner/theos
+          THEOS_DEVICE_IP: localhost
+          THEOS_DEVICE_PORT: 22
+        run: |
+        make clean
+        make package FINALPACKAGE=1
+      
+      - name: Find and verify dylib
+        run: |
+        find .theos -name "MeetLocalRecorder.dylib" -o -name "*.dylib" | head -10
+        file .theos/obj/debug/MeetLocalRecorder.dylib 2>/dev/null || echo "Not found in expected path"
+        ls -la .theos/obj/debug/ 2>/dev/null || ls -la .theos/obj/ 2>/dev/null
+      
+      - name: Upload dylib artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeetLocalRecorder-arm64-dylib
+          path: |
+        .theos/obj/debug/MeetLocalRecorder.dylib
+        .theos/obj/Release/MeetLocalRecorder.dylib
+        .theos/obj/arm64/MeetLocalRecorder.dylib
+        **/*.dylib
+          retention-days: 7
+      
+      - name: Upload deb package (if created)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeetLocalRecorder-deb
+          path: |
+        *.deb
+        **/*.deb
+          retention-days: 7
+

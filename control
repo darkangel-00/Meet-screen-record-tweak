@@ -1,0 +1,9 @@
+Package: com.bitcard.meetlocalrecorder
+Name: Meet Local Recorder
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Experimental in-app ReplayKit recorder with opt-in audio-session/CallKit compatibility hooks for sideloaded Google Meet.
+Maintainer: BitCardLLC
+Author: BitCardLLC
+Section: Tweaks
+Depends: firmware (>= 15.0)
