@@ -88,3 +88,4 @@ a matching injector, and a physical iOS 26.6.1 device.
 # Trigger 4 - fixed yaml
 # Trigger 5
 # Trigger 6
+# Trigger workflow_dispatch
