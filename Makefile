@@ -20,3 +20,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # Fix strongSelf scope
 # Fix typeof(weakSelf)
 # Fix __strong id
+# Fix MLRController* cast
