@@ -84,3 +84,4 @@ No CI build/test is provided; validation requires a real iOS SDK, Theos,
 a matching injector, and a physical iOS 26.6.1 device.
 # Trigger
 # Trigger 2
+# Trigger 3
