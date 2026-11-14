@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout source
@@ -27,6 +27,7 @@ jobs:
           git clone --depth 1 --branch master https://github.com/theos/theos.git $HOME/theos
           echo "$HOME/theos/bin" >> $GITHUB_PATH
           export THEOS="$HOME/theos"
+          $THEOS/bin/update-theos 2>&1 | tail -10
           $THEOS/bin/theos_install_toolchains 2>&1 | tail -5
 
       - name: Verify iOS SDK
