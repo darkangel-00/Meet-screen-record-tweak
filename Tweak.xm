@@ -264,19 +264,20 @@ static UIWindow *MLRKeyWindow(void) {
 
 - (void)startRecording {
     __weak id weakSelf = self;
-    __strong typeof(self) strongSelf = weakSelf;
     RPScreenRecorder *recorder = RPScreenRecorder.sharedRecorder;
     if (!recorder.isAvailable || recorder.isRecording) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         [strongSelf showMessage:@"Recording unavailable"
             message:@"ReplayKit is busy or unavailable for this app/session."];
         return;
     }
     recorder.delegate = self;
     recorder.microphoneEnabled = YES;
+    __strong typeof(weakSelf) strongSelf = weakSelf;
     [strongSelf setRecorderState:MLRRecordingStateStarting];
     [recorder startRecordingWithHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (error) {
                 [strongSelf setRecorderState:MLRRecordingStateIdle];
@@ -291,7 +292,8 @@ static UIWindow *MLRKeyWindow(void) {
 
 - (void)stopRecording {
     __weak id weakSelf = self;
-    __strong typeof(self) strongSelf = weakSelf;
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (!strongSelf) return;
     if (strongSelf.state != MLRRecordingStateRecording) return;
     [strongSelf setRecorderState:MLRRecordingStateStopping];
     NSString *fileName = [NSString stringWithFormat:@"Meet-%@.mp4",
@@ -302,7 +304,7 @@ static UIWindow *MLRKeyWindow(void) {
     [RPScreenRecorder.sharedRecorder stopRecordingWithOutputURL:url
         completionHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (error) {
                 [strongSelf setRecorderState:MLRRecordingStateIdle];
@@ -327,23 +329,23 @@ static UIWindow *MLRKeyWindow(void) {
 - (void)saveToPhotos:(NSURL *)url {
     PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatusForAccessLevel:PHAccessLevelAddOnly];
     __weak id weakSelf = self;
-    __strong typeof(self) strongSelf = weakSelf;
     if (status == PHAuthorizationStatusNotDetermined) {
         [PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelAddOnly
             handler:^(PHAuthorizationStatus result) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                __strong typeof(self) strongSelf = weakSelf;
+                __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (strongSelf) [strongSelf finishPhotoAuthorization:result fileURL:url];
             });
         }];
     } else {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         [strongSelf finishPhotoAuthorization:status fileURL:url];
     }
 }
 
 - (void)finishPhotoAuthorization:(PHAuthorizationStatus)status fileURL:(NSURL *)url {
     __weak id weakSelf = self;
-    __strong typeof(self) strongSelf = weakSelf;
+    __strong typeof(weakSelf) strongSelf = weakSelf;
     if (!strongSelf) return;
     if (status != PHAuthorizationStatusAuthorized && status != PHAuthorizationStatusLimited) {
         [strongSelf setRecorderState:MLRRecordingStateIdle];
@@ -356,7 +358,7 @@ static UIWindow *MLRKeyWindow(void) {
         [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:url];
     } completionHandler:^(BOOL success, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if (success) {
                 NSError *cleanupError = nil;
@@ -379,8 +381,9 @@ static UIWindow *MLRKeyWindow(void) {
     didStopRecordingWithError:(NSError *)error
        previewViewController:(RPPreviewViewController *)previewViewController {
     __weak id weakSelf = self;
-    __strong typeof(self) strongSelf = weakSelf;
     dispatch_async(dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         if (strongSelf.state == MLRRecordingStateSaving) return;
         [strongSelf setRecorderState:MLRRecordingStateIdle];
         [strongSelf showMessage:@"Recording interrupted"
