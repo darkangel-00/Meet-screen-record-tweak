@@ -33,8 +33,6 @@ static AVAudioSessionCategoryOptions MLRAudioOptions(void) {
 - (BOOL)setMode:(AVAudioSessionMode)mode error:(NSError **)error {
 #if MLR_FORCE_DEFAULT_AUDIO
     if (MLRIsChatMode(mode)) {
-        // Do not call setMode: then setCategory:; use a single session change.
-        // This invokes the hooked setCategory:mode:options:error: with Default.
         return [self setCategory:AVAudioSessionCategoryPlayAndRecord
                            mode:AVAudioSessionModeDefault
                         options:MLRAudioOptions()
@@ -67,8 +65,6 @@ static AVAudioSessionCategoryOptions MLRAudioOptions(void) {
                                update:(CXCallUpdate *)update
                            completion:(void (^)(NSError *))completion {
 #if MLR_EXPERIMENTAL_CALLKIT_SUPPRESS
-    // WARNING: Pretending to report a call successfully does NOT activate
-    // a CallKit audio session. WebRTC/CallKit delegate flows may fail.
     NSLog(@"[MeetLocalRecorder] Suppressing incoming CallKit report (experimental)");
     if (completion) completion(nil);
 #else
@@ -278,7 +274,6 @@ static UIWindow *MLRKeyWindow(void) {
     recorder.delegate = self;
     recorder.microphoneEnabled = YES;
     [strongSelf setRecorderState:MLRRecordingStateStarting];
-    __weak id weakSelf = self;
     [recorder startRecordingWithHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             __strong typeof(self) strongSelf = weakSelf;
@@ -297,14 +292,13 @@ static UIWindow *MLRKeyWindow(void) {
 - (void)stopRecording {
     __weak id weakSelf = self;
     __strong typeof(self) strongSelf = weakSelf;
-    if (self.state != MLRRecordingStateRecording) return;
+    if (strongSelf.state != MLRRecordingStateRecording) return;
     [strongSelf setRecorderState:MLRRecordingStateStopping];
     NSString *fileName = [NSString stringWithFormat:@"Meet-%@.mp4",
                           NSUUID.UUID.UUIDString];
     NSURL *url = [NSURL fileURLWithPath:[NSTemporaryDirectory()
                        stringByAppendingPathComponent:fileName]];
-    self.pendingURL = url;
-    __weak id weakSelf = self;
+    strongSelf.pendingURL = url;
     [RPScreenRecorder.sharedRecorder stopRecordingWithOutputURL:url
         completionHandler:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -325,15 +319,16 @@ static UIWindow *MLRKeyWindow(void) {
                 return;
             }
             [strongSelf setRecorderState:MLRRecordingStateSaving];
-            [self saveToPhotos:url];
+            [strongSelf saveToPhotos:url];
         });
     }];
 }
 
 - (void)saveToPhotos:(NSURL *)url {
     PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatusForAccessLevel:PHAccessLevelAddOnly];
+    __weak id weakSelf = self;
+    __strong typeof(self) strongSelf = weakSelf;
     if (status == PHAuthorizationStatusNotDetermined) {
-        __weak id weakSelf = self;
         [PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelAddOnly
             handler:^(PHAuthorizationStatus result) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -342,11 +337,14 @@ static UIWindow *MLRKeyWindow(void) {
             });
         }];
     } else {
-        [self finishPhotoAuthorization:status fileURL:url];
+        [strongSelf finishPhotoAuthorization:status fileURL:url];
     }
 }
 
 - (void)finishPhotoAuthorization:(PHAuthorizationStatus)status fileURL:(NSURL *)url {
+    __weak id weakSelf = self;
+    __strong typeof(self) strongSelf = weakSelf;
+    if (!strongSelf) return;
     if (status != PHAuthorizationStatusAuthorized && status != PHAuthorizationStatusLimited) {
         [strongSelf setRecorderState:MLRRecordingStateIdle];
         [strongSelf showMessage:@"Photos permission required"
@@ -354,7 +352,6 @@ static UIWindow *MLRKeyWindow(void) {
                   @"Allow Add Photos permission in Settings. Recording retained temporarily at %@", url.path]];
         return;
     }
-    __weak id weakSelf = self;
     [PHPhotoLibrary.sharedPhotoLibrary performChanges:^{
         [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:url];
     } completionHandler:^(BOOL success, NSError *error) {
@@ -378,12 +375,13 @@ static UIWindow *MLRKeyWindow(void) {
     }];
 }
 
-// ReplayKit may end unexpectedly due to interruptions or audio-session changes.
 - (void)screenRecorder:(RPScreenRecorder *)screenRecorder
     didStopRecordingWithError:(NSError *)error
        previewViewController:(RPPreviewViewController *)previewViewController {
+    __weak id weakSelf = self;
+    __strong typeof(self) strongSelf = weakSelf;
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.state == MLRRecordingStateSaving) return;
+        if (strongSelf.state == MLRRecordingStateSaving) return;
         [strongSelf setRecorderState:MLRRecordingStateIdle];
         [strongSelf showMessage:@"Recording interrupted"
                   message:error.localizedDescription ?: @"ReplayKit stopped unexpectedly."];
@@ -394,7 +392,6 @@ static UIWindow *MLRKeyWindow(void) {
 
 %ctor {
     @autoreleasepool {
-        // The host may not have a key window when this dylib first loads.
         dispatch_async(dispatch_get_main_queue(), ^{
             [[MLRController shared] bootstrap];
         });
