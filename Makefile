@@ -6,7 +6,7 @@ TWEAK_NAME = MeetLocalRecorder
 MeetLocalRecorder_FILES = Tweak.xm
 MeetLocalRecorder_FRAMEWORKS = UIKit AVFoundation ReplayKit CallKit Photos QuartzCore
 MeetLocalRecorder_CFLAGS = -fobjc-arc -std=c++17 -Wno-deprecated-declarations \
-    -DMLR_FORCE_DEFAULT_AUDIO=1 \
+    -DMLR_FORCE_DEFAULT_AUDIO=0 \
     -DMLR_EXPERIMENTAL_CALLKIT_SUPPRESS=0
 
 include $(THEOS)/makefiles/common.mk
